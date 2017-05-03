@@ -13,6 +13,7 @@ class Spider:
     crawled_file = ''
     errors_file = ''
     queue = set()
+    source_urls = {}
     crawled = set()
     errors = set()
 
@@ -42,11 +43,15 @@ class Spider:
             print(thread_name + ' now crawling ' + page_url)
             print('Queue ' + str(len(Spider.queue)) + ' | Crawled  ' + str(len(Spider.crawled)))
             links, error_str = Spider.gather_links(page_url)
-            Spider.add_links_to_queue(links)
+            Spider.add_links_to_queue(links, page_url)
             if len(error_str) > 0:
                 Spider.errors.add(error_str)
             Spider.queue.remove(page_url)
-            Spider.crawled.add(page_url)
+            try:
+                append_str = max(80-len(page_url), 4)*' ' + Spider.source_urls[page_url]
+            except KeyError:
+                append_str = ""
+            Spider.crawled.add(page_url + append_str)
             Spider.update_files()
 
     # Converts raw response data into readable information and checks for proper html formatting
@@ -68,13 +73,16 @@ class Spider:
 
     # Saves queue data to project files
     @staticmethod
-    def add_links_to_queue(links):
+    def add_links_to_queue(links, page_url):
         for url in links:
             if (url in Spider.queue) or (url in Spider.crawled):
                 continue
             if Spider.domain_name != get_domain_name(url):
-                continue
-            Spider.queue.add(url)
+                # also gather foreign links, but don't crawl from them (otherwise we might end up crawling the entire internet lol)
+                Spider.crawled.add(url + max(80-len(url), 4)*' ' + page_url)
+            else:
+                Spider.queue.add(url)
+                Spider.source_urls[url] = page_url
 
     @staticmethod
     def update_files():
