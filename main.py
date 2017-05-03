@@ -1,11 +1,14 @@
+import sys
 import threading
 from queue import Queue
 from spider import Spider
 from domain import *
 from general import *
 
-PROJECT_NAME = 'viper-seo'
-HOMEPAGE = 'http://viper-seo.com/'
+PROJECTS_DIR = "projects"
+
+PROJECT_NAME = PROJECTS_DIR + "/" + sys.argv[1]
+HOMEPAGE = sys.argv[2]
 DOMAIN_NAME = get_domain_name(HOMEPAGE)
 QUEUE_FILE = PROJECT_NAME + '/queue.txt'
 CRAWLED_FILE = PROJECT_NAME + '/crawled.txt'
